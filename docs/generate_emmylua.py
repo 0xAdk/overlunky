@@ -290,6 +290,25 @@ function F(f_string) end
             continue
         print_lf(lf)
 
+    print("\n--## Deprecated Functions\n")
+    for lf in ps.deprecated_funcs:
+        lf["comment"].pop(0) # "Deprecated" line
+        if lf["comment"] and "NoDoc" in lf["comment"][0]:
+            continue
+
+        if lf["comment"]:
+            lf["comment"][0] = '@deprecated ' + lf["comment"][0]
+        else:
+            ps.print_console(f"Deprecated function {lf["name"]} missing deprecation message")
+            lf["comment"].insert(0, '@deprecated')
+
+        if m := re.search(r"lua\[\"(.*)\"\]", lf["cpp"]):
+            proxy_name = m.group(1)
+            proxy_lf = next(x for x in ps.funcs if x["name"] == proxy_name)
+            lf["cpp"] = proxy_lf["cpp"]
+
+        print_lf(lf)
+
     type_static_funcs = {}
     print("\n--## Types\ndo\n")
     for type in ps.types:
